@@ -44,7 +44,7 @@ Due to the \astname{}, the analysis is divided into three main steps, where each
 
 The only modules that are bound to each language are the \textit{parser} and the \textit{converter} (which converts the source code AST to the \astname{}). Since parsing several different languages is a complex problem, we use ANTLR4 (ANother Tool for Language Recognition) to generate the \textit{parser}, parse the source code and build the AST. ANTLR4 is a parser generator with a big community that provides grammars under the MIT license for virtually any language. This way, when adding support for a new language we only need to generate a new \textit{parser} with ANTLR4 and program a new \textit{converter}, which in our opinion requires a small amount of work. While implementing the \toolname{} tool, we started by adding support for PHP and Java. Later, we extended the tool to support JavaScript and Python. Converters for \implangs{} are all less than 110 lines of code each. 
 
-The main contributions of this thesis are: (1) an approach for improving portability of static security analyzers by converting the source code AST to a \astname{}; (2) a tool that implements this approach written in Java for applications written in \implangs{}.
+The main contributions of this thesis are: (1) an approach for improving portability of static security analyzers by converting the source code AST to a \astname{}; (2) a tool that implements this approach written in Java for \implangs{} applications. The tool is open-source and available at \url{https://github.com/Mihail1996/GT-tool}. Moreover, there is also a scientific paper based on this work that was submitted to the ISSTA 2021 conference.
 
 
 \section{Thesis Outline}

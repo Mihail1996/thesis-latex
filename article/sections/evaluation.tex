@@ -60,7 +60,7 @@ In order to show the ability of \toolname{} to analyze and find vulnerabilities 
 
 \toolname{} analyzed 1946 files and 315031 lines of code and managed to find 71 documented vulnerabilities, such as SQL injection, cross-site scripting, command injection and file inclusion. The analysis times were quite low. The application that took the longest to analyze was \textit{PhpMyAdmin} with 82 seconds. However, the analysis times varied a lot depending on the entry point, meaning that the longer the path through which the data flows, the longer the analysis time.
 
-In our tests, the tool had 2 false negatives due to string interpolation in PHP. If we have a variable named "\$id", and then we have "echo "\$\{id\}";" \toolname{} does not understand that "id" is referring to variable "\$id", thus treating "id" as a constant.
+In our tests, the tool had 6 false negatives. 2 of them were due to string interpolation in PHP. If we have a variable named "\$id", and then we have "echo "\$\{id\}";" \toolname{} does not understand that "id" is referring to variable "\$id", thus treating "id" as a constant. The other 4 false negatives happened because in Dvna all the dangerous code is in anonymous functions that are called by referencing variables, since we do not track the value of each variable, this is a limitation. 
 
 
 
