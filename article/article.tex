@@ -1,0 +1,102 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+% The preceding line is only needed to identify funding in the first footnote. If that is unneeded, please comment it out.
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{tabu}
+\usepackage{array}
+\usepackage{qtree}
+\usepackage{spreadtab}
+\setlength\extrarowheight{3pt}
+
+% Beramono font.
+
+\usepackage{tgpagella}        
+\usepackage[scaled=0.85]{beramono} 
+\usepackage[T1]{fontenc}     
+\usepackage{makecell}
+
+\renewcommand\theadfont{\bfseries}
+\renewcommand\theadgape{\Gape[4pt]}
+\renewcommand\cellgape{\Gape[4pt]}
+\newcommand{\astname}{GAST}
+
+\newcommand{\toolname}{GT}
+
+\newcommand{\astbuilder}{\textit{\astname{} Builder}}
+
+\newcommand{\implangs}{Java, PHP, Python and JavaScript}
+\newcommand{\converter}{\textit{AST Converter}}
+\newcommand{\taintanalyzer}{\textit{Taint Analyzer}}
+
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+
+\lstset{
+  extendedchars=false,
+  basicstyle=\ttfamily\small,
+  frame=top,frame=bottom,
+  captionpos=b, numbers=left,xleftmargin=2em,framexleftmargin=2em,
+  numberstyle=\scriptsize \color{codegray},
+}
+
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+\begin{document}
+
+\title{Virtual Static Security Analyzer for Web Applications}
+
+\author{\IEEEauthorblockN{Mihail Brinza}
+\IEEEauthorblockA{\textit{Instituto Superior Técnico}\\
+Lisbon, Portugal \\
+mihail.brinza@tecnico.ulisboa.pt}
+\and
+\IEEEauthorblockN{Miguel Correia}
+\IEEEauthorblockA{\textit{Instituto Superior Técnico}\\
+Lisbon, Portugal \\
+miguel.p.correia@tecnico.ulisboa.pt}
+\and
+\IEEEauthorblockN{João Pereira}
+\IEEEauthorblockA{\textit{Instituto Superior Técnico}\\
+Lisbon, Portugal \\
+joao.d.pereira@tecnico.ulisboa.pt}
+}
+
+
+\maketitle
+
+\begin{abstract}
+In the past decades web applications have been popular victims of injection attacks such as SQL injection or cross-site scripting. In order to prevent these attacks, we need automatic vulnerability detection tools. However, modern existing tools are complex, consist of thousands of lines of code, and are often bound to a single language. This complexity makes them hard to understand and to port to a new language. 
+
+
+To reduce the complexity of current static analyzers, we propose a new solution that supports the addition of new languages without much effort. In order to achieve this, our solution does not analyze the source code AST directly, instead, it traverses the source code AST and builds a generic AST (\astname{}) from it. Then, we analyze the \astname{} to find vulnerabilities. This way we can decouple the analysis and the source code parsing. Furthermore, \astname{} is just an abstraction that only represents what is needed to perform taint analysis, ignoring the rest. To add support for a new language we just need to generate a parser using ANTLR4 \cite{antlr4book} and write a converter for that AST, which is usually less than 110 lines of code. 
+
+The approach was implemented in the \toolname{} tool, which supports \implangs{}, and was tested against several web applications written in the same languages.
+\end{abstract}
+\begin{IEEEkeywords}
+Security, Static Analysis, Taint Analysis, Antlr4, Information Flow
+\end{IEEEkeywords}
+
+
+\input{sections/introduction.tex}
+
+
+\input{sections/vulnerabilities.tex}
+
+\input{sections/solution.tex}
+
+\input{sections/evaluation.tex}
+
+\input{sections/related-work.tex}
+
+\input{sections/conclusion.tex}
+
+
+\bibliography{bibliography}
+\bibliographystyle{unsrt}
+
+\end{document}

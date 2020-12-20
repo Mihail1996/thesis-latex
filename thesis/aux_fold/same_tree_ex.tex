@@ -1,0 +1,90 @@
+\begin{lstlisting}[
+        language=php,
+        showstringspaces=false,
+        caption={MyDbClass in PHP},
+        label=sametreephp, float] 
+class MyDbClass
+{
+    function getAddressById($id)
+    {
+        $sql = "SELECT address FROM users WHERE id = $id";
+        return executeSQLQuery($sql);
+    }
+}
+\end{lstlisting}
+    
+    
+\begin{lstlisting}[
+    language=Java,
+    showstringspaces=false,
+    caption={MyDbClass in Java},
+    label=sametreejava, float]
+public class MyDbClass
+{
+    public static String getAddressById(String id)
+    {
+        String sql = "SELECT address FROM users WHERE id =" + id;
+        return executeSQLQuery(sql);
+    }
+}
+\end{lstlisting}
+
+
+    
+\begin{figure}[hbt!]
+    \begin{forest}
+        [File
+            [\textit{classes}
+                [Class
+                    [\textit{methods}
+                        [Function
+                            [\textit{name}[executeSQLQuery]]
+                            [\textit{parameters}
+                                [Parameter
+                                    [\textit{name}[id]]
+                                    [\textit{type},tikz={\node[draw,ellipse,black,fit=()(!1),inner sep=0mm]{};} [String]]
+                                ]
+                            ]
+                            [\textit{return type},tikz={\node[draw,ellipse,black,fit=()(!1),inner sep=0mm]{};}[String]]
+                            [\textit{code block}
+                                [\textit{statements},l*=3
+                                    [Assignment 
+                                        [\textit{left}
+                                            [Variable
+                                                [\textit{name}[sql]]
+                                                [\textit{type},tikz={\node[draw,ellipse,black,fit=()(!1),inner sep=0mm]{};}[String]]
+                                            ]
+                                        ]
+                                        [\textit{right}
+                                            [Expression
+                                                [\textit{members}
+                                                    [Constant[\textit{value}[{"SELECT address FROM users WHERE id ="}]]]
+                                                    [Variable[\textit{name}[id]]]
+                                                ]
+                                            ]
+                                        ]
+                                    ]
+                                    [Return 
+                                        [\textit{expression}
+                                            [FunctionCall
+                                                [\textit{name}[executeSQLQuery]]
+                                                [\textit{members}[Variable[\textit{name}[id]]]]
+                                            ]
+                                        ]
+                                    ]
+                                ]
+                            ]      
+                        ]
+                    ]
+                    [\textit{name}[MyDbClass]]  
+                ]
+            ]
+            [\textit{name}[MyDbClass.java]]
+        ]
+    \end{forest}  
+    \vspace*{5mm}
+    \caption{\astname{} representing the code from listing \ref{sametreejava} and \ref{sametreephp}} 
+    \label{sametree}
+\end{figure}
+
+

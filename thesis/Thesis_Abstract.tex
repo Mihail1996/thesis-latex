@@ -1,0 +1,24 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                      %
+%     File: Thesis_Abstract.tex                                        %
+%     Tex Master: Thesis.tex                                           %
+%                                                                      %
+%     Author: Andre C. Marta                                           %
+%     Last modified :  2 Jul 2015                                      %
+%                                                                      %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section*{Abstract}
+
+% Add entry in the table of contents as section
+\addcontentsline{toc}{section}{Abstract}
+
+In the past decades web applications have been popular victims of injection attacks such as SQL injection or cross-site scripting. In order to prevent these attacks, we need automatic vulnerability detection tools. However, modern existing tools are complex, consist of thousands of lines of code, and are often bound to a single language. This complexity makes them hard to understand and to port to a new language. 
+
+
+To reduce the complexity of current static analyzers, we propose a new solution that supports the addition of new languages without much effort. In order to achieve this, our solution does not analyze the source code AST directly, instead, it traverses the source code AST and builds a generic AST (\astname{}) from it. Then, we analyze the \astname{} to find vulnerabilities. This way we can decouple the analysis and the source code parsing. Furthermore, \astname{} is just an abstraction that only represents what is needed to perform taint analysis, ignoring the rest. To add support for a new language we just need to generate a parser using ANTLR4 \cite{antlr4book} and write a converter for that AST, which is usually less than 110 lines of code. 
+
+The approach was implemented in the \toolname{} tool, which supports \implangs{}, and was tested against several web applications written in the same languages.
+\vfill
+
+\textbf{\Large Keywords:} Security, Static Analysis, Taint Analysis, Antlr4, Information Flow

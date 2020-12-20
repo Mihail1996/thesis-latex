@@ -1,0 +1,36 @@
+\section{Related Work}
+\label{relatedwork}
+There is a rich body of work in the area of vulnerability detection, we just summarize the main detection methods by discussing representative papers, while leaving many others unreferenced due to lack of space. 
+
+\subsection{Taint Analysis}
+The most commonly used \textit{data flow analysis} technique. Consists of tracking the flow of sensitive information by marking user input as \textit{tainted} and then propagate the \textit{taint marks} recursively to the variables that are influenced by other \textit{tainted} data. Then, it checks if \textit{tainted} data reaches \textit{sensitive functions} (e.g., \textit{eval, my\_sql\_query} in PHP). If it does, then there is probably a vulnerability that could be exploited. Taint analysis can be applied to either source, binary or intermediate code. 
+
+
+
+\subsection{Static Analysis Tools}
+Static analysis tools are used to automate the detection of bugs and vulnerabilities. Nowadays, they are often part of the development process, with their use being automated by continuous integration pipelines \cite{mohammad2016continuous}. The reason is that they are a cheap way of detecting issues in code, giving the developers more confidence in their software. 
+
+
+SonarQube \cite{campbell2013sonarqube} is a widely used commercial static analysis tool. Performs static analysis based on a set of rules that can be defined by the user. It is able to detect bugs (e.g., possible \textit{null references}) or bad practices in source code (e.g., empty \textit{catch} blocks in Java). Furthermore, it also performs static taint analysis to find vulnerabilities. The taint analysis supports 4 languages, while other features support more than 20. However, since SonarQube is a commercial tool and it is not open source, we can not make any assertion about its complexity. 
+
+FlowDroid \cite{arzt2014flowdroid}, is a precise static taint analyzer specifically tailored for Android and Java applications. Analyzes apps' bytecode and configuration files to find vulnerabilities. FlowDroid is precise because it models the lifecycle of android apps and it is context, field, object and flow-sensitive. Pixy \cite{jovanovic2006pixy} performs taint analysis on PHP source code and extends it by using \textit{alias analysis}. This way it considers the existence of two or more variables that identify the same object.
+
+
+Another very interesting idea is from A. Notzli, and D. Engler \cite{microgrammars}, who managed to implement an effective bug-finding static checker, which is a static analysis tool that has the goal to find bugs in a program (e.g., \textit{null pointers}, \textit{deadlocks}), and that it is orders of magnitude less complex. This was possible by using a new source code parsing technique based on incomplete \textit{micro-grammars}, instead of depending on every syntax detail of a language or its compiler. Traditional checking systems use parsers designed to parse a complete language syntax, thus rejecting any input that does not lead to a valid parse. On the other hand, micro-grammars parsing for bug finding has two main differences from traditional parsing.
+
+\begin{enumerate}
+  \item When a traditional parser finds a non-matching input to its specifications, it returns an error. By contrast, when a micro-grammar parser hits a non-matching input, it simply slides forward by one token and tries again.
+
+  \item  Micro-grammars allow developers to perform fine-grained input skipping by using \textit{wildcard} non-terminals that lazily match any input up to a suffix.
+
+\end{enumerate}
+
+The implementation of this static checker is very modular and it is composed of a lexer, parsers and checkers. There is a parser for each non-terminal, for example the parser for \textit{C} is composed of smaller parsers for \textit{if} statements, \textit{while} loops, \textit{for} loops, etc. Then all these small parsers compose the parser for \textit{C}. This modularity brings another big advantage, the possibility of reusing a lot of these small parsers between languages, for example, C and Dart share many parsers.
+The use of micro-grammars and modular architecture make the tool relatively easy to port to other languages. This somehow inspired our work, since our tool also does not depend on every detail of a language.
+
+Andromeda \cite{tripp2013andromeda}, is a demand-driven static taint analysis tool that supports Java, C\# and JavaScript. It is flow and context-sensitive. Furthermore, it extends its analysis by being integrated with Framework For Frameworks (F4F), which is a solution for augmenting taint analysis with precise framework support \cite{sridharan2011f4f}. 
+
+
+\subsection{Dynamic Analysis Tools} 
+Dynamic analysis tools detect vulnerabilities at runtime. Most commonly, they rely on some kind of \textit{code instrumentation} or transformation. Dytan \cite{dytan} instruments x86 compiled code with the ability to do \textit{taint} propagation at runtime. It is precise since it does \textit{taint} analysis at byte level. Instrumenting x86 compiled code allows it to support any language that compiles to x86 (e.g., C and C++). Phosphor \cite{phosphor} applies a similar technique to Java bytecode. However, it propagates the \textit{taint} marks at variable level, improving performance over Dytan at the cost of some precision. Moreover, it supports any language that runs on top of Java virtual machine (e.g., Java, Kotlin or Scala).
+

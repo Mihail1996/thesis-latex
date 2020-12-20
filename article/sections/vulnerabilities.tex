@@ -1,0 +1,51 @@
+\section{Input Validation Vulnerabilities}
+This section briefly presents a list of vulnerabilities considered in this work. We can divide them in four categories \cite{iberia} - \textit{query manipulation, client-side injection, file and path injection} and \textit{command injection}. The main problem of all these vulnerabilities lies in the improper validation of user input. Our work focuses on this kind of vulnerability.
+
+\subsection{Query Manipulation}
+These vulnerabilities are associated with the construction of queries or filters that are executed by some other engine (e.g., a database management system). If the query is constructed with unsanitized inputs, then it is possible to modify the normal behavior. 
+
+All vulnerabilities in this category can be prevented by sanitizing user input, so it does not contain meta-characters that can alter the behavior of the engine:
+
+\subsubsection{SQL Injection} vulnerability caused by the use of string building functions to create SQL queries. An attack consists of mixing normal characters with meta-characters. In the example of listing \ref{phpsql}, a malicious user can provide a username \texttt{"admin' ---"} causing the query to execute without the need of a password. 
+
+\begin{lstlisting}[language=PHP,
+    showstringspaces=false,
+    caption={PHP code vulnerable to SQL Injection},
+    label=phpsql]
+$name = $_GET['username'];
+$pass = $_GET['password'];
+$query = "SELECT * FROM users 
+    WHERE name='$name' AND password='$pass'"; 
+$result = mysql_query($query);
+\end{lstlisting}
+
+
+\subsubsection{NoSQL Injection} Similarly to relational databases, non-relational are also vulnerable to injection attacks. 
+
+\subsubsection{XPath Injection} This vulnerability is very similar to SQL Injection, but in this case, data is injected in XML documents, which are often used to store data or configurations. To prevent this vulnerability, it is enough to check if the input contains malicious characters.
+
+\subsubsection{LDAP Injection} (Lightweight Directory Access Protocol) Injection is also exploited by providing meta-characters to string-building functions. LDAP Injection attacks aim to modify the structure of the filter and retrieve data from a directory.
+
+\subsection{Client-Side Injection}
+The vulnerabilities in this category allow an attacker to execute malicious code in the victim's browser. This kind of attack is not against the application itself but against the user and can be prevented by either sanitizing or encoding the input.
+\subsubsection{Cross-site scripting (XSS)}
+There are three types of XSS attacks: reflected or non-persistent, stored or persistent and DOM-based. In this paper we only consider the first two types.
+
+A program vulnerable to reflected XSS can have a single line, \textit{"echo \$\_GET['user'];"} 
+The attack consists of convincing the user to click on a link to the web application with a malicious script which will be reflected by the \textit{echo} instruction. (e.g., \textit{www.a.pt?user=<script>*malicious code*</script>}).
+
+A stored XSS consists of two steps: first, the attacker inserts a malicious script in the server, then later, the server returns that script to one or more users.
+
+\subsubsection{Header injection} allows an attacker to break the HTTP  response with \textit{"\textbackslash n"} and \textit{"\textbackslash r"}. This allows the attacker to inject malicious code in headers or even a new HTTP  response. It can be avoided by sanitizing these characters.
+
+\subsubsection{Email injection} Very similar to Header Injection, it has the goal to manipulate email components (e.g., sender, destination, message) by injecting the line termination character. In this case, sanitizing the input solves the problem as well.
+
+\subsection{File and Path Injection} This category consists of vulnerabilities where the user can control the path or the URL of the file included. Thus allowing him to inject malicious files (\textit{Remote file inclusion}) or read arbitrary files from the server (\textit{Directory/Path traversal}).
+
+
+\subsection{OS Command injection} 
+This category consists of vulnerabilities where the user can control the input to functions that execute OS commands (e.g., \textit{shell\_exec} in PHP). Allowing the attacker to execute arbitrary code in the server.
+
+
+
+

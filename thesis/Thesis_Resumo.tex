@@ -1,0 +1,26 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                      %
+%     File: Thesis_Resumo.tex                                          %
+%     Tex Master: Thesis.tex                                           %
+%                                                                      %
+%     Author: Andre C. Marta                                           %
+%     Last modified :  2 Jul 2015                                      %
+%                                                                      %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section*{Resumo}
+
+% Add entry in the table of contents as section
+\addcontentsline{toc}{section}{Resumo}
+
+Nas últimas décadas, as aplicações web têm sido um alvo muito popular de ataques informáticos. Para mitigar esse problema precisamos de formas automatizadas de detetar vulnerabilidades em código fonte. No entanto, as ferramentas modernas são muito complexas, sendo constituídas por milhares de linhas de código. Para além disso, as suas implementações estão muitas vezes presas a uma determinada linguagem. Essa complexidade faz com que as ferramentas sejam muito difíceis de compreender e de serem extendidas para suportarem novas linguagens.
+
+
+Para reduzir a complexidade dos analisadores estáticos atuais, esta tese propõe uma nova solução genérica, que suporta a adição de novas linguagens sem muito esforço de programação. A nossa solução, ao contrário dos analisadores estáticos tradicionais, não analisa a AST do código fonte diretamente. Em vez disso, percorremos a AST do código fonte e construímos uma AST genérica (\astname{}) a partir desta. Depois disso, a análise para encontrar vulnerabilidades é feita com base na \astname{}. Desta forma conseguimos desacouplar a parte da análise e do \textit{parse} do código fonte. Para além disso, \astname{} apenas contém o que é realmente necessário para fazer a análise, ignorando o resto. Para adicionarmos suporte a uma nova linguagem é necessário apenas gerar um \textit{parser} usando ANTRL4 \cite{antlr4book} e escrever um conversor para a respetiva AST. Habitualmente um conversor é composto por menos de 110 linhas de código.
+
+A nossa solução foi implementada na ferramenta \toolname{}, que supporta PHP, Java, JavaScript e Python, e foi testada contra várias aplicações web.
+
+\vfill
+
+\textbf{\Large Palavras-chave:} segurança, análise estática, fluxo de dados, vulnerabilidades
+

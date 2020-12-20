@@ -1,0 +1,58 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                      %
+%     File: Thesis_Introduction.tex                                    %
+%     Tex Master: Thesis.tex                                           %
+%                                                                      %
+%     Author: Andre C. Marta                                           %
+%     Last modified :  2 Jul 2015                                      %
+%                                                                      %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\chapter{Introduction}
+\label{chapter:introduction}
+
+\section{Motivation}
+In the past couple of decades, research on web security and bug finding tools have seen a big increase. This is due to the fact that software vulnerabilities can have devastating effects on companies and/or its clients \cite{telang2007empirical}. In 2017, hackers have compromised the sensitive information of 145 million American customers from Equifax, one of the three major consumer credit reporting agencies in the U.S.A, leading to hundreds of millions of dollars of loss to the company \cite{equifax}.
+
+Web applications are popular victims of security attacks since they accept user input, which can be malicious, and incorporate it into dynamically generated code. 
+For example, a user may have to fill a form, post a comment, or submit a username and a password for authentication. 
+The application then takes this user-provided input and inserts it into a dynamically generated program in another language (e.g., a new client-side script, or an SQL or JavaScript query to a back-end database). If the user input reaches these scripts/queries without first being validated and sanitized, then there is probably a vulnerability.
+
+\textit{Code injection attacks} such as SQL injection or cross-site scripting were considered the top security problem in 2017 by OWASP \cite{OWASP}. These attacks occur when a malicious user manages to inject his code into dynamically generated scripts/queries, usually by adding meta-characters to the input. By doing this, an attacker could change the behavior of the application, steal data, compromise database integrity and/or bypass authentication and access control, violating system correctness, security, and privacy properties.
+
+Injection vulnerabilities are caused mainly by poor user input sanitization, the use of languages where it is easy to write insecure code (e.g., PHP, C) and programmers that do not have much knowledge about software security \cite{jain2011review}.
+
+In order to detect and prevent injection attacks, we need automatic detection mechanisms.
+While researchers have tried many approaches over the past decades, (e.g., static and dynamic taint analysis, symbolic execution, etc.) the dominant trend is towards increasingly complex tools. However, the more complex a tool is, the worse it scales, the harder it is to maintain and understand, and the more assumptions it makes, limiting the programs it can analyze. 
+
+One big problem of the increasing complexity in vulnerability detection tools is that most of the times they are not \textit{portable}\footnote{In this work we use the term \textit{portable} to refer to the approaches that either support different languages or to which it is easy to add support for a new one.}. Although most of the programming languages we use nowadays to build web applications have a lot of similarities between them, vulnerability detection tools still seem to struggle when it comes to supporting more than one language. Many of them are wedded to a specific language \cite{diglossia,phpapis,jovanovic2006pixy, arzt2014flowdroid,nunes2015phpsafe,wassermann2008static, dahse2014simulation,livshits2005finding}, a specific compiled code \cite{dytan,taintcheck,dt++} (e.g., x86 binary, bytecode) or they depend on modified runtime engines \cite{diglossia,phosphor}. To port one of these tools to another language basically requires to implement it again from scratch. 
+
+Since there is a wide range of languages available to build web applications, the lack of portability of detection tools can be considered a problem and a limitation. However, there are some approaches that solve this issue to some degree which we discuss in section \ref{relatedwork}. 
+
+\section{Overview}
+In this thesis, we present a new static taint analysis approach, implemented in the {\it Generic Taint analyzer} (\toolname{}) tool, that aims to solve the problem of portability while being context-sensitive and keeping low rates of false positives and negatives. Our solution is not bound to a specific language and can be extended to support a new language with a relatively small amount of work and lines of code. 
+Traditional static taint analyzers parse the code and then analyze the resulting abstract syntax tree (AST). The nodes that the AST consists of are specific to the parsed language, making the tools bound to that language. However, most of the languages we use nowadays to build web applications are similar. Languages usually consist of classes, attributes, functions or methods, statements, expressions, etc... Even between languages such as PHP and Java, that are apparently very different, we find many of these structural similarities. Based on this fact, our approach converts the source code AST to a simple, generic abstract syntax tree (\astname{}) that can represent a large set of languages used in web applications. More importantly, the \astname{} does not represent all the details of a language. Instead, it only has the aspects that are actually used in the analysis. This way, we  use the same code to find vulnerabilities, regardless of the language being analyzed. The \astname{} allows us to keep the source code parsing and the analysis decoupled.
+
+Due to the \astname{}, the analysis is divided into three main steps, where each one uses a different module (\textit{parser, converter, analyzer}):
+
+\begin{enumerate}
+    \item Use a \textit{parser} specific to the language to get the source code AST
+    \item Convert the source code AST to a \astname{} using a specific \textit{converter}
+
+    \item Run an \textit{analyzer} on the \astname{} to find vulnerabilities. In our case, the \textit{analyzer} is a static taint analyzer
+\end{enumerate}
+
+The only modules that are bound to each language are the \textit{parser} and the \textit{converter} (which converts the source code AST to the \astname{}). Since parsing several different languages is a complex problem, we use ANTLR4 (ANother Tool for Language Recognition) to generate the \textit{parser}, parse the source code and build the AST. ANTLR4 is a parser generator with a big community that provides grammars under the MIT license for virtually any language. This way, when adding support for a new language we only need to generate a new \textit{parser} with ANTLR4 and program a new \textit{converter}, which in our opinion requires a small amount of work. While implementing the \toolname{} tool, we started by adding support for PHP and Java. Later, we extended the tool to support JavaScript and Python. Converters for \implangs{} are all less than 110 lines of code each. 
+
+The main contributions of this thesis are: (1) an approach for improving portability of static security analyzers by converting the source code AST to a \astname{}; (2) a tool that implements this approach written in Java for applications written in \implangs{}.
+
+
+\section{Thesis Outline}
+
+To get a better understanding of the proposed work, chapter \ref{chapter:background} starts by presenting a list of injection vulnerabilities that we address in this work. Then, section \ref{relatedwork} explains the concept of \textit{taint analysis}. After that, sections \ref{static}, \ref{dynamic} and \ref{sqlparsetree} present a set of static and dynamic approaches at detecting vulnerabilities that somehow influenced our work.
+
+Chapter \ref{solution} aims to describe the developed work in further detail. Section \ref{architecture} starts by presenting the architecture of the \toolname{} tool, describing each module. Then, section \ref{genericast} goes more in-depth explaining the \astname{} by presenting each node that is part of it. Section \ref{buildgenericast} follows by explaining how the \toolname{} tool builds the \astname{}. Finally, section \ref{analysisfeatures} presents our taint analysis and the compromises that were made.
+
+Chapter \ref{chapter:results} shows the results of our work. Section \ref{evaluation} first presents the results of analyzing several web applications and then states how portable our tool is. Then, section \ref{limitations} talks about the limitations of our implementation.
+
+Finally, chapter \ref{chapter:conclusions} concludes our work by stating how our goals were achieved and pointing out what can still be improved.

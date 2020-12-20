@@ -1,0 +1,299 @@
+\section{The \toolname{} tool}
+\label{solution}
+In this section we explain in-depth our approach at solving the complex problem of developing a portable static taint analyzer. Our solution, besides being portable, also aims to be able to perform a context-aware analysis, being as sound and complete as possible.
+
+As stated before, static analyzers are most often bound to a single language and depend on every detail of that language. However, there are a lot of similarities between programming languages, and our approach explores just that. If we take a look at the top trending languages in 2020, ranked by IEEE Spectrum \cite{cass2020top}, used to build web applications, we can divide them in two categories:
+
+\begin{enumerate}
+    \item Dynamically typed - Languages that do not check or enforce type-safety at compile-time \cite{tratt2009dynamically}. Instead, type-checking is done during runtime (e.g., Python, JavaScript, PHP and Ruby).
+    \item Statically typed - Type checking is done at compile-time. (e.g., Java, C\#, GO and Dart).
+\end{enumerate}
+
+
+The languages from each category have many similarities between them. Take for instance JavaScript and PHP, which are very common on web applications. Both of them are object-oriented, have methods, functions, attributes, variables, expressions, etc... Even the \textit{control flow statements} are practically the same (e.g., \textit{if, switch, while, for, do while} etc.). Furthermore, the data flow is almost identical, using assignments. 
+
+Now, if we compare Java and C\# the same is true. Moreover, even comparing languages between categories (e.g., Java and PHP) we see that many of their features overlap. The main difference is that we know the types when analyzing the source code. So from our studies, we found out that when it comes to static taint analysis we can abstract almost any web programming language. 
+
+With this in mind, our approach introduces a new way of building static analyzers, which consists of having a simple, generic AST (\astname{}) that can represent the structure of the source code of a large set of languages found in web applications. The \astname{}, similarly to the micro-grammars approach \cite{microgrammars}, does not depend on every detail of the languages. Instead, it only represents what is absolutely needed to perform a data flow analysis (in our case, static taint analysis). Section \ref{genericast} explains the abstractions that were made to build the \astname{}.
+
+With the addition of the \astname{}, our analysis gains an extra step comparing to traditional tools. Usually, analyzing a program consists of first parsing the source code and then traversing the resulting AST to find vulnerabilities. By contrast, our approach adds a new, additional step, which consists of converting the source code AST to a \astname{}. Then, we perform the taint analysis on the \astname{} to detect vulnerabilities in the code. This way, the module that performs the taint analysis is completely independent of the language being analyzed. 
+
+Next, we describe the architecture and data flow of \toolname{}. Then, we present the  structure of the \astname{} and how to build it. Finally, we discuss the features of our taint analysis and the compromises and choices that were made.
+
+\subsection{Architecture and Data Flow}
+
+In order to implement a tool that can support several languages simultaneously, we need a decoupled and modular architecture. The architecture of \toolname{}, represented in figure \ref{architecture}, consists mainly of four modules: \textit{Parser}, \textit{AST Converter}, \astbuilder{} and \textit{Taint Analyzer}.
+
+
+\subsubsection{Parser} takes as input the source code and produces a source code AST, specific to the language. This module is language-dependent, meaning that every time we add a new language, we need a new parser for that language. Since parsing a full-blown language is a complex task, we delegate it to ANTLR4, which is a widely used parser generator that uses \textit{LL} for parsing \cite{antlr4book}. ANTRL4 has a big community and provides grammars under the MIT license for virtually any language. This way, thanks to ANTRL4, our parsers consist simply of generated code. Furthermore, ANTRL4 also generates tree walkers, which we use to traverse the AST.
+
+\subsubsection{AST Converter} traverses the source code AST using the generated tree walker and raises events to the \astbuilder{} (e.g., entering and exiting class, methods or functions declarations). These events allow the \astbuilder{} to create the \astname{}. This module is the only one needed to program whenever adding support for a new language.
+
+\subsubsection{\astname{} Builder} reacts to the events from the \textit{AST Converter} and internally builds the \astname{}. Section \ref{buildgenericast} shows more in-depth the process of building the \astname{}. 
+
+\subsubsection{Taint Analyzer} module that takes as input the \astname{} from the \astbuilder{} and a configuration file where we can specify the value of several parameters, such as:
+\begin{itemize}
+    \item Sensitive functions - functions that when called with \textit{tainted} arguments may result in a vulnerability (e.g., \textit{mysql\_query} in PHP)
+    \item Sanitization functions - functions that perform input sanitization and whose return value is always \textit{untainted} (e.g., \textit{mysqli\_real\_escape\_string} in PHP)
+    \item Entry points - the function which is invoked by the server when the user makes a request. We also specify which arguments of the entry point function are \textit{tainted}
+\end{itemize}
+
+After traversing the \astname{}, \toolname{} produces a vulnerability report. 
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width =0.5\linewidth]{images/yasat-architecture.pdf}
+    \caption{\toolname{} - data flow and architecture overview} 
+    \label{architecture}
+\end{figure}
+
+\subsection{\astname{}}
+\label{genericast}
+Similarly to the micro-grammars solution \cite{microgrammars}, the \astname{} aims to be an intermediate structure that does not depend on every detail of any language. Instead, it abstracts most of the complexity by using generic statements. Each generic statement has a correspondence with a concrete statement of almost any programming language. In this section we describe the structure of the \astname{} by presenting every element that can be part of it. 
+
+\subsubsection{Constant} comprises \textit{strings}, \textit{integers}, \textit{floats}, \textit{null} values etc. Basically, everything that is directly hardcoded in the source code is considered a constant. Since this element never changes, it is impossible to be \textit{tainted}.
+ 
+\subsubsection{Variable} as the name says, it represents the variables in the code. Contains the name of the variable, and if the language is statically typed, it also contains the type of the variable. It can become \textit{tainted} through assignments.
+
+\subsubsection{Attribute} represents an attribute in a class. It has a name and a type. Also, it can be \textit{tainted}.
+
+\subsubsection{Parameter} represents a function or a method parameter. It can be \textit{tainted} if it is the parameter of the entry point function, or if the argument passed to a function is \textit{tainted}.
+
+\subsubsection{Expression} represents a generic abstraction of any expression (e.g., arithmetic, logical, bitwise, comparison etc.). It consists of a list of expressions.
+Take for instance the listing \ref{javaexpression} where to each variable, \textit{a, b, c} we assign an expression. In our representation, all these expressions are equal. They all consist of an expression containing two members: a variable named \textit{"x"} and a constant with value \textit{"5"}. This allows us to abstract any operator due to the fact that in data flow analysis, operators (except the assignment operators) do not influence \textit{taint} propagation. For instance, if the variable \textit{x} in listing \ref{javaexpression} is \textit{tainted}, then, all variables will be \textit{tainted}, regardless of their operator.
+
+
+Since an expression consists only of a list of other expressions, the \textit{taint} propagation is a result of a logical OR of all elements in the expression. Meaning that if any element in the list is \textit{tainted}, the whole expression is marked as \textit{tainted}. 
+
+\begin{lstlisting}[language=Java,
+    showstringspaces=false,
+    caption={Expression assignment examples},
+    label=javaexpression]
+boolean a = x == 5;
+int b = x + 5;
+int c = x * 5;
+\end{lstlisting}
+
+\subsubsection{Function Call} this is a subtype of \textit{expression} with the difference that it has a name, referencing the function it is invoking. The arguments are just a list of expressions that can contain anything. For instance, the function call \textit{executeQuery(getQuery("name"))} is named \textit{executeQuery} and has as argument another function call named \textit{getQuery}. The latter having as argument a constant with value \textit{"name"}.
+
+A function call is considered \textit{tainted} if any of the following conditions is true: 
+\begin{itemize}
+    \item the called function is in the source code and it returns a \textit{tainted} value
+    \item the called function is in a library and any of its arguments is \textit{tainted}
+\end{itemize}
+
+This element also represents method calls that do not have an object as a source (e.g., methods from the same class or any superclass that are not preceded by the keywords \textit{this} or \textit{super} in Java).
+
+
+\subsubsection{Assignment} statement that represents, as the name indicates, an assignment. Consists of two expressions, one on the left-hand side and another on the right-hand side. It is the main way of propagating \textit{taint} marks. Whenever the expression assigned on the right is evaluated as \textit{tainted}, the mark is also propagated to the expression on the left. Usually, the expression on the left-hand side is just a variable. Listing \ref{javaexpression} contains examples of assignment statements.
+
+
+\subsubsection{Return} statement that represents the end of the data flow for a path. The returned value is represented by an \textit{expression}, which can be \textit{tainted}.
+
+
+\subsubsection{Throw} statement very similar to the return statement. The only difference is that when a return statement is found in the callee function, the data flow is transferred to the caller function. Whilst in the case of a throw statement, the data flow is transferred to a catch block. The thrown expression can be \textit{tainted}.
+
+
+\subsubsection{Method Call} this element represents method calls. It consists of a source, which can be an object or a class (if the method is static). Listing \ref{methodcall} shows examples of method calls where the source is an object and a class respectively. A method call is \textit{tainted} if any of the following conditions is true:
+
+\begin{itemize}
+    \item the method is not in the analyzed code and the source is \textit{tainted}
+    \item the method is in the source code and returns a \textit{tainted} value
+\end{itemize}
+
+\begin{lstlisting}[language=Java,
+    showstringspaces=false,
+    caption={Method call examples},
+    label=methodcall]
+context.getUsers();
+MyClass.myStaticMethod();
+\end{lstlisting}
+
+
+\subsubsection{New} expression that represents an object creation. It works mostly as a function call to the constructor. In most languages, the constructor has the same name as the class. But in some languages, the name of the constructor is different from the name of the class (e.g., PHP, Python). For these cases, we keep a configuration file with the names. For instance, \textit{new Foo()} in PHP would result in the call of \textit{\_\_construct()} function of the class \textit{Foo}.
+
+\subsubsection{Attribute access} represents a direct access to an object attribute (e.g., \textit{context.myProperty}).
+
+
+\subsubsection{Code block} represents a block of code. Consists of a list of statements. Listing \ref{javaexpression} is an example of a code block with three statements.
+
+\subsubsection{Conditional statement} this element represents loops (e.g., \textit{for, while, do while} etc.). Consists of a code block and a condition, which is an \textit{expression}.
+
+\subsubsection{Try Catch} statement composed of a \textit{try} code block, a list of \textit{catch} code blocks and a \textit{finally} code block. 
+
+
+\subsubsection{If} statement that represents control flow statements (e.g., \textit{if-else, if-elseif-else} and \textit{switch}). Each option in the control flow has its own code block (e.g., \textit{if-else} has two code blocks - one for \textit{if} and another for the \textit{else}).
+
+\subsubsection{Function} element that represents a method or a function. It has a name, a return type, a list of parameters and a code block.
+
+\subsubsection{Class} element that represents a class. It has a name, a list of attributes and a list of methods. Furthermore, it can have a superclass.
+
+\subsubsection{File} this is the root element of any \astname{}. It has a code block (for languages like PHP or JavaScript), a list of classes, a list of functions and a list of imported files (used to trace calls to imported function).
+
+
+
+
+One important note to keep in mind is that not every language will use every feature from the \astname{}. For instance, the file element can have statements directly in the root block. Now, this is a feature that it is only used by languages such as PHP and JavaScript. By contrast, Java and C\# do not allow code outside classes, so they do not make use of this feature. 
+
+\subsection{Building the \astname{}}
+\label{buildgenericast}
+
+
+In order to build the \astname{}, we first parse the source code using a parser generated by ANTLR4 to obtain the source code AST. Then, we convert the AST to the \astname{} representation. To do this, we use a tree walker also generated by ANTLR4. The tree walker, which conceptually is a visitor, traverses every node of the AST and for each node it invokes a function when it enters or exits that node. So, in order to convert the AST to \astname{} we need to override some of these methods in the \converter{} to pass state to the \astbuilder{}. This is due to the fact that the \astbuilder{} keeps the current context in a stack and these methods indicate what is the new context to push and when to pop it. This way the \converter{} is just a class that overrides a set of methods from the generated tree walker. 
+
+Listing \ref{funccallconvertexample} shows part of the PHP \converter{}. In the example, we override two methods from the generated tree walker. The first method is invoked when the tree walker enters a \textit{Func} node and the second when it exits the same node. So, when the tree walker reaches a \textit{Func} node, it invokes the method \textit{enterFunc} from the \converter{}. The latter then invokes a method from the \astbuilder{} that pushes the function element to the stack. This way, the \astbuilder{} is able to keep track of the context. For instance, if the tree walker encounters a \textit{Parameter} node while in the \textit{Func} node, the parameter would be added to the element on the top of the stack, which in this case would be a function. The function is then popped from the stack when tree walker exits the \textit{Func} node, invoking the method \textit{exitFunc} which calls a method from the \astbuilder{} that pops the function (line 8). 
+
+\begin{lstlisting}[language=Java,
+    showstringspaces=false,
+    caption={Function declaration example},
+    label=funccallconvertexample, float]
+@Override
+public void enterFunc(FuncContext ctx) {
+    gastBuilder.addFunction(ctx, ctx.name());
+}
+
+@Override
+public void exitFunc(FuncContext ctx) {
+    gastBuilder.exitFunctionOrMethodDeclaration();
+}
+\end{lstlisting}
+
+One important note is that we only push to the stack statements (e.g., functions, classes, assignments, conditional statements, etc.), which are nodes in the AST, while elements such as variables, constants or parameters are not pushed. This is due to the fact that they represent leaves in the AST, so they would be pushed and popped right away. This simplification allows us to override less methods from the tree walker when writing the \converter{} (e.g., we do not need to override \textit{exitVariable}).
+
+
+Let us now consider listing \ref{assignmentconvertexample} where line 1 corresponds to the assignment being built and lines 3-9 to the sequence of calls made by the \converter{} to the \astbuilder{}. Due to lack of space, the signatures of the overridden methods are omitted. When the tree walker enters the assignment, the \converter{} calls a method that adds an assignment to the stack (line 3). Next, it enters a variable and since the assignment is on the top of the stack, the variable becomes the left side of the assignment (line 4). Then, the tree walker enters the expression \textit{"x == 5"} and the \converter{} calls a method that adds an expression to the stack (line 5). After that, it enters a variable and later a constant, which will both be added to the expression, since it is the top of the stack (lines 6, 7). Finally, the tree walker first exits the expression and then the assignment, calling \textit{exitStatementOrExpression} twice (lines 8, 9). Figure \ref{tree} shows the \astname{} representation of the assignment.
+\begin{figure}[ht]
+
+    \Tree[.Assignment 
+    [.\textit{left} [.Variable [.\textit{name} a ] [.\textit{type} boolean ] ]]
+    [.\textit{right} [.Expression [.\textit{members}  
+        [.Variable [.\textit{name} x ] [.\textit{type} int ] ]
+        [.Constant [.\textit{value} 5 ]]
+        ]]] ]
+
+    \caption{\astname{} resulting from executing listing \ref{assignmentconvertexample}}\label{tree}
+\end{figure}
+
+\begin{lstlisting}[language=Java,
+    showstringspaces=false,
+    caption={Assignment build call sequence},
+    label=assignmentconvertexample]
+boolean a = x == 5;
+    
+gastBuilder.addAssignment(ctx);
+gastBuilder.addVariable(ctx.VarName());
+gastBuilder.addExpression(ctx);
+gastBuilder.addVariable(ctx.VarName());
+gastBuilder.addConstant(ctx.getText());
+gastBuilder.exitStatementOrExpression();
+gastBuilder.exitStatementOrExpression();
+\end{lstlisting}
+
+Converting the AST is as simple as identifying the methods needed to override from the generated tree walker, and then call the methods from the \astbuilder{}.
+For example, the \converter{} for PHP has 67 lines of code (counting only statements), and from these 67 statements, there are 29 that are different, meaning that a lot of the methods invoked are the same (e.g., \textit{exitStatementOrExpression} is invoked 23 times). 
+
+
+\subsection{Analysis features}
+
+Our approach is to use a context-aware static taint analysis to find all potential security vulnerabilities. To be able to statically find vulnerabilities, it is necessary to know what \textit{objects} each variable may refer to, a general problem known as \textit{pointer}, \textit{points-to} or \textit{alias analysis}\cite{sridharan2013alias}. Also, the tool must perform a \textit{path aware} \textit{taint} propagation. Furthermore, it must be able to detect function/method calls between different files.
+
+Next, we discuss the importance of the \textit{alias analysis}. Then, we present our solution to a \textit{path aware} analysis and the method \toolname{} uses to find function/method calls from different files. Finally, we describe our approach to handle loops.
+
+\subsubsection{Pointer information} to illustrate the importance of pointer information, consider the example from listing \ref{pointer}. Assume that \textit{param} is tainted and that \textit{executeQuery} is a sensitive function. In this example, a more conservative approach may assume that \textit{buf1} and \textit{buf2} may reference the same object, thus marking both calls to \textit{executeQuery} as tainted. Instead, \toolname{} traces the data flow through assignments made in each execution path. Thus, being able to identify that line 9 is a safe call and line 13 is a vulnerability.
+
+
+\begin{lstlisting}[
+    language=Java,
+    showstringspaces=false,
+    caption={Taint propagation example},
+    label=pointer, float] 
+String param = req.getParameter("name");
+StringBuffer buf1;
+StringBuffer buf2;
+
+...
+
+buf1.append(param);
+String query = buf2.toString();
+con.executeQuery(query);
+
+buf2 = buf1;
+query = buf2.toString();
+con.executeQuery(query);
+\end{lstlisting}
+
+Pointer analysis has been subject of much compiler research over the last decades \cite{spath2016boomerang,hind2001pointer}. Since determining what heap object a given variable may point to is undecidable, our approach computes only an approximation based on the data flow through assignments. Meaning that, in much more complex cases, when \toolname{} is unsure to which reference an object is pointing to, it assumes that they all point to the same instance.
+
+
+\subsubsection{Path Analysis} in order to perform a precise static taint analysis it is very important to be able to track the data through different paths, ideally all of them. However, in practice, it is almost impossible since static path analysis is a very complex problem. The path is often decided at runtime due to features like \texttt{instanceof}, dynamic dispatch or reflection in Java \cite{hammer2008static}. Furthermore, these features differ between languages. Because of this, we can not have the most precise path analysis for each language. Instead, we perform an approximate path analysis based only on the \textit{control flow statements}, ignoring their conditions. This means that we only look at the structure of the code, and for each conditional statement we propagate the data flow twice: one assuming that the flow enters that path and another assuming it does not. This assumption has the disadvantage of propagating \textit{taint} marks through impossible paths.
+
+Consider now the example from listing \ref{pathpropagation} and assume that the variable \textit{input} is \textit{tainted}. Observing the code, we can easily identify an SQL injection vulnerability at line 7, since at line 3 the \textit{query} is concatenated with the \textit{input}.
+In this example, \toolname{} propagates the \textit{taint} marks through two paths: the first executing the \textit{if} and the second the \textit{else}. Finally, it reports the vulnerability at line 7. Also, it mentions that this vulnerability only happens if the expression \textit{"input != null"} at line 2 is true. In more complex cases, for each vulnerability \toolname{} returns the call stack and the conditions that need to be met.
+
+\begin{lstlisting}[
+    language=Java,
+    showstringspaces=false,
+    caption={Path propagation example},
+    label=pathpropagation] 
+String query = "SELECT * FROM users WHERE name=";
+if (input != null){
+    query = query + input;
+} else {
+    query = query + "Bob";
+}
+con.executeQuery(query);
+\end{lstlisting}
+
+Let us now consider the example from listing \ref{pathpropagation1}. This example is almost identical to listing \ref{pathpropagation}, with the exception of line 2. This assignment makes the instruction from line 4 unreachable, meaning that in practice, the code has only one possible path. However, \toolname{} has exactly the same output as the previous example: two paths and one vulnerability. This is due to the fact that \toolname{}, and static analysis tools in general, struggle with detecting whether a condition can be true or not.
+
+\begin{lstlisting}[
+    language=Java,
+    showstringspaces=false,
+    caption={Path propagation example with unreachable branch},
+    label=pathpropagation1, float] 
+String query = "SELECT * FROM users WHERE name=";
+input = null;
+if (input != null){
+    query = query + input;
+} else {
+    query = query + "Bob";
+}
+con.executeQuery(query);
+\end{lstlisting}
+
+This way, we perform an approximate path analysis based on the \textit{control flow statements} and their code blocks. The advantage of this kind of path detection is that it can be applied to any language. Furthermore, from our testing, most of the times it is enough to detect vulnerabilities, even though it is not the most accurate.
+
+
+\subsubsection{Cross-file function referencing} in the last decades, web applications have become increasingly more complex, consisting of many files. For this reason, in order to perform a precise static analysis, we need to be able to perform \textit{taint} propagation between files. However, languages have different ways of importing code. For instance, Java imports packages, which consist of a set of classes, and PHP imports files directly \cite{rountev2004static,hills2014static}. 
+
+To mitigate this problem, our approach supports two generic ways of importing code:
+\begin{enumerate}
+    \item File inclusion - usually used by dynamically typed languages, such as PHP, Python and JavaScript. Each file has a list of imported files. When \toolname{} finds a call to a function that is not found in the file, it searches in all imported files for that function. If more than one is found, it analyses all of them.
+    
+    \item Type tracking - works for most of the object-oriented languages, such as Java and C\#. Consists of checking the type of the target of the method call and then checking if that class is in the source code. If the class is found it tries to find the method. If the method is not found, it goes to the superclass.
+\end{enumerate}
+
+From our testing and analysis, most of the times \toolname{} correctly propagates the flow to other functions.
+
+
+\subsubsection{Loops Analysis} loops have always been tricky for static analysis tools. This is due to the fact that in many cases it is impossible to know how many times a loop will execute, if any. Many times they are influenced by the user. For this reason, our tool takes a simplistic approach to deal with loops, which is analyzing each loop twice. This approach helps to mitigate cases where a variable only becomes \textit{tainted} after the first iteration. Either way, for more flexibility we left the value configurable, so we could change it depending on the program we want to analyze. 
+
+\begin{lstlisting}[
+    language=php,
+    showstringspaces=false,
+    caption={Vulnerability in while loop},
+    label=whileloop, float] 
+$name = $GET_["name"]    
+$query = "SELECT * FROM users WHERE name=" 
+while(true){
+    mysql_query($query);
+    $query += $name;
+}
+\end{lstlisting}
+
+To illustrate this issue, consider listing \ref{whileloop}. In this example, if the \textit{while} loop executes once, there is no vulnerability. This happens because in the first iteration \textit{\$query} is not \textit{tainted} upon executing \textit{mysql\_query}. However, after executing line 5 once, \textit{\$query} becomes tainted which makes the next call to \textit{mysql\_query} unsafe. By propagating the taint more than once, \toolname{} is able to detect this kind of vulnerability.
+
+
+
+
+

@@ -1,0 +1,39 @@
+\begin{figure}[hbt!]
+    \subcaptionbox{}[.333\linewidth]
+    {\begin{tikzpicture}
+        \selectcolormodel{gray}
+        \cell[fill=none]{Assign}
+        \stacktop[fill=none]{}
+    \end{tikzpicture}}
+    \subcaptionbox{}[.333\linewidth]
+    {\begin{tikzpicture}
+        \cell[fill=none]{Assign [Var a]}
+        \stacktop[fill=none]{}
+      \end{tikzpicture}}      
+      \subcaptionbox{}[.333\linewidth]
+    {\begin{tikzpicture}
+        \cell[fill=none]{Assign [Var a, Expr]}
+        \cell[fill=none]{Expr}
+        \stacktop[fill=none]{}
+    \end{tikzpicture}}
+    \subcaptionbox{}[.333\linewidth]
+    {\vspace*{5mm}\begin{tikzpicture}
+        \cell[fill=none]{Assign [Var a, Expr]}
+        \cell[fill=none]{Expr [Var x]}
+        \stacktop[fill=none]{}
+    \end{tikzpicture}}
+    \subcaptionbox{}[.333\linewidth]
+    {\vspace*{5mm}\begin{tikzpicture}
+        \cell[fill=none]{Assign [Var a, Expr]}
+        \cell[fill=none]{Expr [Var x, Const y]}
+        \stacktop[fill=none]{}
+    \end{tikzpicture}}
+    \subcaptionbox{}[0.333\linewidth]
+    {\vspace*{5mm}\begin{tikzpicture}
+        \cell[fill=none]{Assign [Var a, Expr]}
+        \stacktop[fill=none]{}
+    \end{tikzpicture}}    
+
+    \vspace{5mm}
+    \caption{Stack state when executing code from listing \ref{assignmentconvertexample}}\label{stacks}
+\end{figure}
