@@ -21,9 +21,17 @@ In order to show the ability of \toolname{} to analyze and find vulnerabilities 
             \hline
             @  DVWA                 & 19651     & @ PHP        & 358        & 18 \\
             \hline
-            @  OWASP Vwa            & 1018      & @ PHP        & 27         & 17 \\   [0.5ex]    
+            @  OWASP Vwa            & 1018      & @ PHP        & 27         & 17 \\   
+            \hline
+            @  Vulnerable-node      & 4207      & @ JavaScript & 13         & 5 \\  
+            \hline
+            @  Dvna                 & 771      & @ JavaScript  & 14         & 0 \\
+            \hline  
+            @  Vulpy                 & 2373      & @ Python    & 57         & 6 \\
+            \hline  
+            @  Dvpwa                 & 674      & @ Python    & 21         & 7 \\   [0.5ex]  
             \hline\hline   
-            @ \textbf{Total}        & sum(b2:b6) &              &  sum(d2:d6) &  sum(e2:e6) \\
+            @ \textbf{Total}        & sum(b2:b10) &              &  sum(d2:d10) &  sum(e2:e10) \\
             \hline
         \end{spreadtab}
     \label{results}
@@ -50,7 +58,7 @@ In order to show the ability of \toolname{} to analyze and find vulnerabilities 
 \end{table}
 
 
-\toolname{} analyzed 1841 files and 307006 lines of code and managed to find 53 documented vulnerabilities, such as SQL injection, cross-site scripting, command injection and file inclusion. The analysis times were quite low. The application that took the longest to analyze was \textit{PhpMyAdmin} with 82 seconds. However, the analysis times varied a lot depending on the entry point, meaning that the longer the path through which the data flows, the longer the analysis time.
+\toolname{} analyzed 1946 files and 315031 lines of code and managed to find 71 documented vulnerabilities, such as SQL injection, cross-site scripting, command injection and file inclusion. The analysis times were quite low. The application that took the longest to analyze was \textit{PhpMyAdmin} with 82 seconds. However, the analysis times varied a lot depending on the entry point, meaning that the longer the path through which the data flows, the longer the analysis time.
 
 In our tests, the tool had 2 false negatives due to string interpolation in PHP. If we have a variable named "\$id", and then we have "echo "\$\{id\}";" \toolname{} does not understand that "id" is referring to variable "\$id", thus treating "id" as a constant.
 
