@@ -279,10 +279,10 @@ Phosphor \cite{phosphor} is a more recent tool, that implements \textit{taint tr
 
 It has two main differences from Dytan: 
 \begin{itemize}
-    \item It does tracking at variable-level instead of byte-level.
+    \item It does tracking at variable level instead of byte level.
     \item It does not support \textit{implicit information flow} propagation.
 \end{itemize}
-One big advantage of the first one is that the overhead added is 1x in time and 2-3x in memory consumption. This is a big improvement and makes the tool more viable to be run in real systems. The cost of the much lower overhead is less precision. Tainting at variable-level means that \textit{Phosphor} is only able to tell whether a variable is tainted or not, but it is unable to tell exactly which character is causing the attack.
+One big advantage of the first one is that the overhead added is 1x in time and 2-3x in memory consumption. This is a big improvement and makes the tool more viable to be run in real systems. The cost of the much lower overhead is less precision. Tainting at variable level means that \textit{Phosphor} is only able to tell whether a variable is tainted or not, but it is unable to tell exactly which character is causing the attack.
 The second difference is more of a limitation, but the authors say that the tool could be extended to support \textit{implicit information flow} propagation.
 
 
