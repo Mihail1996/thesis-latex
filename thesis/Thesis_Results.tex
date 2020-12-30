@@ -19,7 +19,7 @@ The objective of this section is to show that \toolname{} is capable of finding 
 
 
 \subsection{Vulnerability detection}
-In order to show the ability of \toolname{} to analyze and find vulnerabilities in web applications, we tested \toolname{} against two types of web applications. First, we chose 5 open source applications from GitHub that are deliberately insecure, with documented vulnerabilities. The criteria used to choose them was the number of stars that each application has on GitHub, essentially choosing the most known ones. To run the tests, we had to manually identify the entry points and sensitive functions for each application, meaning that \toolname{} analyzed each application several times, once for each entry point. Second, we also tested \toolname{} against some real-world open-source web applications. Since these applications are much bigger, we tested them automatically assuming that each file is an entry point and tainting the variables that might be influenced by the user (e.g., \$\_GET[*] in PHP). Tables \ref{results} and \ref{results1} show the results of our analysis. The tests were made on a computer with a Ryzen 1600 processor (6 cores, 12 threads at 3.6GHz) and 16GB of RAM. In the data, we only include files with the extension that we analyzed (e.g., *.java and *.php). Furthermore, we excluded comments and blank lines from the line count. 
+In order to show the ability of \toolname{} to analyze and find vulnerabilities in web applications, we tested \toolname{} against two types of web applications. First, we chose 5 open source applications from GitHub that are deliberately insecure, with documented vulnerabilities. The criteria used to choose them was the number of stars that each application has on GitHub, essentially choosing the most known ones. To run the tests, we had to manually identify the entry points and sensitive functions for each application, meaning that \toolname{} analyzed each application several times, once for each entry point. Second, we also tested \toolname{} against some real-world open-source web applications. Since these applications are much bigger, we assumed that every file can is a web page that can receive user input, tainting the variables that might be influenced by the user (e.g., \$\_GET[*] in PHP). Tables \ref{results} and \ref{results1} show the results of our analysis. The tests were made on a computer with a Ryzen 1600 processor (6 cores, 12 threads at 3.6GHz) and 16GB of RAM. In the data, we only include files with the extension that we analyzed (e.g., *.java and *.php). Furthermore, we excluded comments and blank lines from the line count. 
 
 \begin{table}[htbp]
     \caption{Deliberately insecure web applications}
@@ -41,12 +41,16 @@ In order to show the ability of \toolname{} to analyze and find vulnerabilities 
             @  Vulnerable-node      & 4207      & @ JavaScript & 13         & 5 \\  
             \hline
             @  Dvna                 & 771      & @ JavaScript  & 14         & 0 \\
+            \hline
+            @  Goof                 & 571      & @ JavaScript  & 8         & 3 \\
+            \hline  
+            @  NodeGoat                 & 2697      & @ JavaScript  & 49   & 4 \\
             \hline  
             @  Vulpy                 & 2373      & @ Python    & 57         & 6 \\
             \hline  
             @  Dvpwa                 & 674      & @ Python    & 21         & 7 \\   [0.5ex]  
             \hline\hline   
-            @ \textbf{Total}        & sum(b2:b10) &              &  sum(d2:d10) &  sum(e2:e10) \\
+            @ \textbf{Total}        & sum(b2:b12) &              &  sum(d2:d12) &  sum(e2:e12) \\
             \hline
         \end{spreadtab}
     \label{results}
@@ -63,7 +67,7 @@ In order to show the ability of \toolname{} to analyze and find vulnerabilities 
             \hline\hline   
             @  SquirrelMail 1.5     & 46214     & @ PHP        & 376         & 0 \\ 
             \hline
-            @  PhpMyAdmin           & 224852    & @ PHP        & 728        & 0 \\  [0.5ex]    
+            @  PhpMyAdmin 4.9.5     & 153576    & @ PHP        & 740        & 1 \\  [0.5ex]    
             \hline\hline   
             @ \textbf{Total}        & sum(b2:b3) &              &  sum(d2:d3) &  sum(e2:e3) \\
             \hline
@@ -74,7 +78,7 @@ In order to show the ability of \toolname{} to analyze and find vulnerabilities 
 
 
 
-\toolname{} analyzed 1946 files and 315031 lines of code and managed to find 71 documented vulnerabilities, such as SQL injection, cross-site scripting, command injection and file inclusion. The analysis times were quite low. The application that took the longest to analyze was \textit{PhpMyAdmin} with 82 seconds. However, the analysis times varied a lot depending on the entry point, meaning that the longer the path through which the data flows, the longer the analysis time.
+\toolname{} analyzed 1994 files and 246349 lines of code and managed to find 79 documented vulnerabilities, such as SQL injection, cross-site scripting, command injection and file inclusion. The analysis times were quite low. The application that took the longest to analyze was \textit{PhpMyAdmin} with 82 seconds. However, the analysis times varied a lot depending on the entry point, meaning that the longer the path through which the data flows, the longer the analysis time.
 
  
 Besides testing \toolname{} against web applications, we also have a set of 81 unit tests, with simple vulnerabilities, that run on each build of the tool. This way we have more confidence when we make a change to the taint analyzer.

@@ -26,12 +26,16 @@ In order to show the ability of \toolname{} to analyze and find vulnerabilities 
             @  Vulnerable-node      & 4207      & @ JavaScript & 13         & 5 \\  
             \hline
             @  Dvna                 & 771      & @ JavaScript  & 14         & 0 \\
+            \hline
+            @  Goof                 & 571      & @ JavaScript  & 8         & 3 \\
+            \hline  
+            @  NodeGoat                 & 2697      & @ JavaScript  & 49   & 4 \\
             \hline  
             @  Vulpy                 & 2373      & @ Python    & 57         & 6 \\
             \hline  
             @  Dvpwa                 & 674      & @ Python    & 21         & 7 \\   [0.5ex]  
             \hline\hline   
-            @ \textbf{Total}        & sum(b2:b10) &              &  sum(d2:d10) &  sum(e2:e10) \\
+            @ \textbf{Total}        & sum(b2:b11) &              &  sum(d2:d11) &  sum(e2:e11) \\
             \hline
         \end{spreadtab}
     \label{results}
@@ -48,7 +52,7 @@ In order to show the ability of \toolname{} to analyze and find vulnerabilities 
             \hline\hline   
             @  SquirrelMail 1.5     & 46214     & @ PHP        & 376         & 0 \\ 
             \hline
-            @  PhpMyAdmin           & 224852    & @ PHP        & 728        & 0 \\  [0.5ex]    
+            @  PhpMyAdmin 4.9.5     & 153576    & @ PHP        & 740        & 1 \\  [0.5ex]    
             \hline\hline   
             @ \textbf{Total}        & sum(b2:b3) &              &  sum(d2:d3) &  sum(e2:e3) \\
             \hline
@@ -58,7 +62,7 @@ In order to show the ability of \toolname{} to analyze and find vulnerabilities 
 \end{table}
 
 
-\toolname{} analyzed 1946 files and 315031 lines of code and managed to find 71 documented vulnerabilities, such as SQL injection, cross-site scripting, command injection and file inclusion. The analysis times were quite low. The application that took the longest to analyze was \textit{PhpMyAdmin} with 82 seconds. However, the analysis times varied a lot depending on the entry point, meaning that the longer the path through which the data flows, the longer the analysis time.
+\toolname{} analyzed 1994 files and 246349 lines of code and managed to find 79 documented vulnerabilities, such as SQL injection, cross-site scripting, command injection and file inclusion. The analysis times were quite low. The application that took the longest to analyze was \textit{PhpMyAdmin} with 82 seconds. However, the analysis times varied a lot depending on the entry point, meaning that the longer the path through which the data flows, the longer the analysis time.
 
 In our tests, the tool had 4 false negatives in Dvna because all the dangerous code is in anonymous functions that are called by referencing variables, since we do not track the value of each variable, this is a limitation. 
 
