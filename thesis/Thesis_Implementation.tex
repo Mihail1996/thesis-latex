@@ -25,7 +25,7 @@ As stated before, static analyzers are most often bound to a single language and
 
 The languages from each category have many similarities between them. Take for instance JavaScript and PHP, which are very common on web applications. Both of them are object-oriented, have methods, functions, attributes, variables, expressions, etc... Even the \textit{control flow statements} are practically the same (e.g., \textit{if, switch, while, for, do while} etc.). Furthermore, the data flow is almost identical, using assignments. 
 
-Now, if we compare Java and C\# the same is true. Moreover, even comparing languages between categories (e.g., Java and PHP) we see that many of their features overlap. The main difference is that we know the types when analyzing the source code. So from our studies, we found out that when it comes to static taint analysis we can abstract almost any web programming language. 
+Now, if we compare Java and C\# the same is true. Moreover, even comparing languages between categories (e.g., Java and PHP) we see that many of their features overlap. The main difference is that we know the types when analyzing the source code. So from our studies, we found out that when it comes to static taint analysis, we can abstract almost any web programming language. 
 
 With this in mind, our approach introduces a new way of building static analyzers, which consists of having a simple, generic AST (\astname{}) that can represent the structure of the source code of a large set of languages found in web applications. The \astname{}, similarly to the micro-grammars approach \cite{microgrammars}, does not depend on every detail of the languages. Instead, it only represents what is absolutely needed to perform a data flow analysis (in our case, static taint analysis). Section \ref{genericast} explains the abstractions that were made to build the \astname{}.
 
@@ -111,6 +111,7 @@ After traversing the \astname{}, \toolname{} produces a vulnerability report in 
 {
     "vulnerabilities": [
         {
+            "file": "EntryPointClass.java",
             "line": 7,
             "vulnerableMethod": "executeQuery",
             "functionCallStack": [],
@@ -141,7 +142,7 @@ Similarly to the micro-grammars solution \cite{microgrammars}, the \astname{} ai
 \subsection{Elements}
 
 \subsubsection{Constant} 
-Element that comprises \textit{strings}, \textit{integers}, \textit{floats}, \textit{null} values etc. Basically, everything that is directly hardcoded in the source code is considered a constant. Since this element never changes, it is impossible to be \textit{tainted}. Figure \ref{constant} presents the \astname{} representation of a constat.
+Element that comprises \textit{strings}, \textit{integers}, \textit{floats}, \textit{null} values etc. Basically, everything that is directly hardcoded in the source code is considered a constant. Since this element never changes, it is impossible to be \textit{tainted}. Figure \ref{constant} presents the \astname{} representation of a constant.
 
 \begin{figure}[hbt!]
     \centering
@@ -183,7 +184,7 @@ Represents an attribute in a class. It has a name and a type. Also, it can be \t
     \caption{\astname{} representation of an attribute}\label{attribute}
 \end{figure}
 
-\subsubsection{Parameter} Element that abstracts the parameters of methods and functions. It can be \textit{tainted} if it is the parameter of the entry point function, or if the argument passed to a function is \textit{tainted}. Just like the \textit{attribute}, it is also a subtype of \textit{Variable}. Figure \ref{parameter} presents its \astname{} representation. 
+\subsubsection{Parameter} Element that abstracts the parameters of methods and functions. It can be \textit{tainted} if it is the parameter of the entry point function, or if the argument passed to a function is \textit{tainted}. Just like the \textit{attribute}, it is also a subtype of \textit{variable}. Figure \ref{parameter} presents its \astname{} representation. 
 
 \begin{figure}[hbt!]
     \centering
@@ -736,7 +737,7 @@ From our testing and analysis, most of the times \toolname{} correctly propagate
 
 \subsection{Loops Analysis}
 \label{loops}
-Loops have always been tricky for static analysis tools. This is due to the fact that in many cases it is impossible to know how many times a loop will execute, if any. Many times they are influenced by the user. For this reason, our tool takes a simplistic approach to deal with loops, which is analyzing each loop twice. This approach helps to mitigate cases where a variable only becomes \textit{tainted} after the first iteration. Either way, for more flexibility we left the value configurable, so we could change it depending on the program we want to analyze. 
+Loops have always been tricky for static analysis tools. This is due to the fact that in many cases it is impossible to know how many times a loop will execute, if any. They are often influenced by the user. For this reason, our tool takes a simplistic approach to deal with loops, which is analyzing each loop twice. This approach helps to mitigate cases where a variable only becomes \textit{tainted} after the first iteration. Either way, for more flexibility we left the value configurable, so we could change it depending on the program we want to analyze. 
 
 
 \begin{lstlisting}[

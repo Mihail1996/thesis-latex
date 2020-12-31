@@ -85,7 +85,7 @@ A program vulnerable to reflected XSS can have a single line, \textit{"echo \$\_
 The attack consists of convincing the user to click on a link to the web application with a malicious script which will be reflected by the \textit{echo} instruction. (e.g., \textit{www.a.pt?user=<script>*malicious code*</script>}).
 A stored XSS consists of two steps: first, the attacker inserts a malicious script in the server, then later, the server returns that script to one or more users.
 
-\subsubsection{Header injection} allows an attacker to break the HTTP  response with \textit{"\textbackslash n"} and \textit{"\textbackslash r"}. This allows the attacker to inject malicious code in headers or even a new HTTP  response. It can be avoided by sanitizing these characters.
+\subsubsection{Header injection} This vulnerability allows an attacker to break the HTTP  response with \textit{"\textbackslash n"} and \textit{"\textbackslash r"}. This allows the attacker to inject malicious code in headers or even a new HTTP  response. It can be avoided by sanitizing these characters.
 
 \subsubsection{Email injection} Very similar to Header Injection, it has the goal to manipulate email components (e.g., sender, destination, message) by injecting the line termination character. In this case, sanitizing the input solves the problem as well.
 
@@ -190,7 +190,7 @@ This way their static checker only focuses on the most important aspects of a la
 \end{enumerate}
 
 
-Wildcards are implemented based on \( \mu\)chex's \textit{SkipTo(P)} rule, represented in Figure \ref{skipTo}, which skips tokens until it reaches a suffix \textit{P}. Figure \ref{skipTo} also shows a micro-grammar example where \textit{Rule1} accepts any token that starts with the character \textit{a} and ends with \textit{cd}. It would accept \textit{abcd} for example, but not \textit{abd}. 
+Wildcards are implemented based on the \textit{SkipTo(P)} rule, represented in Figure \ref{skipTo}, which skips tokens until it reaches a suffix \textit{P}. Figure \ref{skipTo} also shows a micro-grammar example where \textit{Rule1} accepts any token that starts with the character \textit{a} and ends with \textit{cd}. It would accept \textit{abcd} for example, but not \textit{abd}. 
 
 The \textit{Slide'} rule, which corresponds to \textit{Sliding Window} implementation, slides one token until it can find something to accept. Because of this rule, \textit{Rule1} is able to accept inputs such as \textit{"Xabcd"}, even though the input does not start with the character \textit{a}.
  
