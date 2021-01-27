@@ -144,7 +144,9 @@ This technique consists of tracking the flow of sensitive information by marking
 There are two types of taint propagation policies: \textit{explicit} and \textit{implicit information flow}.
 Listing \ref{explicit} is an example of \textit{explicit information flow}. Assume that the value of the parameter \textit{a} is tainted, then the taint will be propagated to variable \textit{w} since \textit{a} is involved directly in the computation of \textit{w};
 
-The second type of taint propagation is less intuitive. It refers to situations in which a tainted value affects the value of another variable indirectly. Consider the code in listing \ref{implicit} and assume the value of parameter \textit{a} is tainted. Although \textit{a} is not involved directly in the computation of the value of variable \textit{x}, the value of \textit{a} affects the value of \textit{x} through dependency control.
+The second type of taint propagation is less intuitive. It refers to situations in which a tainted value affects the value of another variable indirectly. Consider the code in listing \ref{implicit} and assume the value of parameter \textit{a} is tainted. Although \textit{a} is not involved directly in the computation of the value of variable \textit{x}, the value of \textit{a} affects the value of \textit{x} through dependency control. 
+
+Our work focuses on the \textit{explicit information flow} propagation policy, but it can be extended to support both policies.
 
 
 \begin{lstlisting}[language=C, caption={Explicit information flow},label=explicit,captionpos=b]

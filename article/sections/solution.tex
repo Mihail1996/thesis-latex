@@ -1,6 +1,6 @@
 \section{The \toolname{} tool}
 \label{solution}
-In this section we explain in-depth our approach at solving the complex problem of developing a portable static taint analyzer. Our solution, besides being portable, also aims to be able to perform a context-aware analysis, being as sound and complete as possible.
+In this section we explain in-depth our approach at solving the complex problem of developing a portable static taint analyzer. Our solution, besides being portable, also aims to be able to perform a context-aware analysis.
 
 As stated before, static analyzers are most often bound to a single language and depend on every detail of that language. However, there are a lot of similarities between programming languages, and our approach explores just that. If we take a look at the top trending languages in 2020, ranked by IEEE Spectrum \cite{cass2020top}, used to build web applications, we can divide them in two categories:
 
@@ -22,19 +22,18 @@ Next, we describe the architecture and data flow of \toolname{}. Then, we presen
 
 \subsection{Architecture and Data Flow}
 
-In order to implement a tool that can support several languages simultaneously, we need a decoupled and modular architecture. The architecture of \toolname{}, represented in figure \ref{architecture}, consists mainly of four modules: \textit{Parser}, \textit{AST Converter}, \astbuilder{} and \textit{Taint Analyzer}.
+In order to implement a tool that can support several languages simultaneously, we need a decoupled and modular architecture. The architecture of our tool, represented in figure \ref{architecture}, consists mainly of four modules: \textit{Parser}, \textit{AST Converter}, \astbuilder{} and \textit{Taint Analyzer}.
 
 
 \subsubsection{Parser} takes as input the source code and produces a source code AST, specific to the language. This module is language-dependent, meaning that every time we add a new language, we need a new parser for that language. Since parsing a full-blown language is a complex task, we delegate it to ANTLR4, which is a widely used parser generator that uses \textit{LL} for parsing \cite{antlr4book}. ANTRL4 has a big community and provides grammars under the MIT license for virtually any language. This way, thanks to ANTRL4, our parsers consist simply of generated code. Furthermore, ANTRL4 also generates tree walkers, which we use to traverse the AST.
 
 \subsubsection{AST Converter} traverses the source code AST using the generated tree walker and raises events to the \astbuilder{} (e.g., entering and exiting class, methods or functions declarations). These events allow the \astbuilder{} to create the \astname{}. This module is the only one needed to program whenever adding support for a new language.
-
+ 
 \subsubsection{\astname{} Builder} reacts to the events from the \textit{AST Converter} and internally builds the \astname{}. Section \ref{buildgenericast} shows more in-depth the process of building the \astname{}. 
 
 \subsubsection{Taint Analyzer} module that takes as input the \astname{} from the \astbuilder{} and a configuration file where we can specify the value of several parameters, such as:
 \begin{itemize}
-    \item Sensitive functions - functions that when called with \textit{tainted} arguments may result in a vulnerability (e.g., \textit{mysql\_query} in PHP)
-    \item Sanitization functions - functions that perform input sanitization and whose return value is always \textit{untainted} (e.g., \textit{mysqli\_real\_escape\_string} in PHP)
+    \item Sensitive sinks - functions that when called with \textit{tainted} arguments may result in a vulnerability (e.g., \textit{mysql\_query} in PHP). For each sensitive function we can set a list of functions that can sanitize its inputs. A sanitization function is a function that cleans the input from malicious characters and whose return value is always \textit{untainted} (e.g., one sanitization function for \textit{mysql\_query} is \textit{mysqli\_real\_escape\_string}). This mapping between sensitive and sanitization functions allows us precisely specify the correct sanitization function for each sensitive function, thus reducing false negatives in our analysis.
     \item Entry points - the function which is invoked by the server when the user makes a request. We also specify which arguments of the entry point function are \textit{tainted}
 \end{itemize}
 

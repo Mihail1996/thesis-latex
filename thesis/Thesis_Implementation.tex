@@ -13,7 +13,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \label{solution}
-In this chapter we explain in-depth our approach at solving the complex problem of developing a portable static taint analyzer. Our solution, besides being portable, also aims to be able to perform a context-aware analysis, being as sound and complete as possible.
+In this chapter we explain in-depth our approach at solving the complex problem of developing a portable static taint analyzer. Our solution, besides being portable, also aims to be able to perform a context-aware analysis.
 
 As stated before, static analyzers are most often bound to a single language and depend on every detail of that language. However, there are a lot of similarities between programming languages, and our approach explores just that. If we take a look at the top trending languages in 2020, ranked by IEEE Spectrum \cite{cass2020top}, used to build web applications, we can divide them in two categories:
 
@@ -38,7 +38,7 @@ Next, we describe the architecture and data flow of \toolname{}. Then, we presen
 \label{architecture}
 
 
-In order to implement a tool that can support several languages simultaneously, we need a decoupled and modular architecture. The architecture of \toolname{}, represented in figure \ref{architecture}, consists mainly of four modules: \textit{Parser}, \textit{AST Converter}, \textit{\astname{} Builder} and \textit{Taint Analyzer}.
+In order to implement a tool that can support several languages simultaneously, we need a decoupled and modular architecture. The architecture of our tool, represented in figure \ref{architecture}, consists mainly of four modules: \textit{Parser}, \textit{AST Converter}, \textit{\astname{} Builder} and \textit{Taint Analyzer}.
 
 \subsection{Parser} 
 
@@ -57,8 +57,8 @@ Listing \ref{settings} shows an example of a configuration file. In this file, w
 \begin{itemize}
     \item Source code location - we can set the directory where the source code is and the file extensions that we want to analyze (lines 2, 3)
     \item Entry points - the file and the function where the data flow propagation should start. In the example, it corresponds to lines 6-14, where the entry point is a function called \textit{functionEntryPoint} from the class \textit{EntryPointClass} in the file \textit{EntryPointClass.java}. We also specify which arguments are \textit{tainted}: \textit{"taintedArg","userInput"}
-    \item Sensitive functions - functions that when called with \textit{tainted} arguments may result in a vulnerability. In the example we specify a function named \textit{executeQuery} from the class \textit{Statement} (lines 15-20)
-    \item Sanitization functions - functions that perform input sanitization and whose return value is always \textit{untainted}. In listing \ref{settings} we configure a sanitization method called \textit{sanitizeInputMethod} from the class \textit{SanitizerClass}
+    \item Sensitive sinks - functions that when called with \textit{tainted} arguments may result in a vulnerability. In the example we specify a function named \textit{executeQuery} from the class \textit{Statement} (lines 15-26). For each sensitive function we can set a list of functions that can sanitize its inputs. A sanitization function is a function that cleans the input from malicious characters and whose return value is always \textit{untainted} (e.g., one sanitization function for \textit{mysql\_query} is \textit{mysqli\_real\_escape\_string}). In listing \ref{settings} we configure a sanitization method called \textit{sanitizeInputMethod} from the class \textit{SanitizerClass}. This mapping between sensitive and sanitization functions allows us precisely specify the correct sanitization function for each sensitive function, thus reducing false negatives in our analysis.
+    
     \item Loops settings - number of times we should analyze a loop. We explain this choice more in-depth in section \ref{loops}.
 \end{itemize}
 
@@ -84,13 +84,13 @@ Listing \ref{settings} shows an example of a configuration file. In this file, w
         "sensitiveFunctions": [
             {
                 "name": "exectuteQuery",
-                "type": "Statement"
-            }
-        ],
-        "sanitizationFunctions": [
-            {
-                "name": "sanitizeInputMethod",
-                "type": "SanitizerClass"
+                "type": "Statement",
+                "sanitizationFunctions": [
+                    {
+                        "name": "sanitizeInputMethod",
+                        "type": "SanitizerClass"
+                    }
+                ]
             }
         ],
         "returnTaintedIfTaintedSource": true,

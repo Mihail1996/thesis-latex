@@ -55,7 +55,7 @@
 Lisbon, Portugal \\
 mihail.brinza@tecnico.ulisboa.pt}
 \and
-\IEEEauthorblockN{Miguel Correia}
+\IEEEauthorblockN{Miguel Pupo Correia}
 \IEEEauthorblockA{\textit{Instituto Superior Técnico}\\
 Lisbon, Portugal \\
 miguel.p.correia@tecnico.ulisboa.pt}
@@ -75,7 +75,7 @@ In the past decades web applications have been popular victims of injection atta
 
 To reduce the complexity of current static analyzers, we propose a new solution that supports the addition of new languages without much effort. In order to achieve this, our solution does not analyze the source code AST directly, instead, it traverses the source code AST and builds a generic AST (\astname{}) from it. Then, we analyze the \astname{} to find vulnerabilities. This way we can decouple the analysis and the source code parsing. Furthermore, \astname{} is just an abstraction that only represents what is needed to perform taint analysis, ignoring the rest. To add support for a new language we just need to generate a parser using ANTLR4 \cite{antlr4book} and write a converter for that AST, which is usually less than 110 lines of code. 
 
-The approach was implemented in the \toolname{} tool, which supports \implangs{}, and was tested against several web applications written in the same languages.
+We implemented a tool called GT with this approach. The tool supports \implangs{}, and was tested against several web applications written in the same languages.
 \end{abstract}
 \begin{IEEEkeywords}
 Security, Static Analysis, Taint Analysis, Antlr4, Information Flow
