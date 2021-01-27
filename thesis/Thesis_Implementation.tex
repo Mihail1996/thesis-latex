@@ -57,7 +57,7 @@ Listing \ref{settings} shows an example of a configuration file. In this file, w
 \begin{itemize}
     \item Source code location - we can set the directory where the source code is and the file extensions that we want to analyze (lines 2, 3)
     \item Entry points - the file and the function where the data flow propagation should start. In the example, it corresponds to lines 6-14, where the entry point is a function called \textit{functionEntryPoint} from the class \textit{EntryPointClass} in the file \textit{EntryPointClass.java}. We also specify which arguments are \textit{tainted}: \textit{"taintedArg","userInput"}
-    \item Sensitive sinks - functions that when called with \textit{tainted} arguments may result in a vulnerability. In the example we specify a function named \textit{executeQuery} from the class \textit{Statement} (lines 15-26). For each sensitive function we can set a list of functions that can sanitize its inputs. A sanitization function is a function that cleans the input from malicious characters and whose return value is always \textit{untainted} (e.g., one sanitization function for \textit{mysql\_query} is \textit{mysqli\_real\_escape\_string}). In listing \ref{settings} we configure a sanitization method called \textit{sanitizeInputMethod} from the class \textit{SanitizerClass}. This mapping between sensitive and sanitization functions allows us precisely specify the correct sanitization function for each sensitive function, thus reducing false negatives in our analysis.
+    \item Sensitive sinks - functions that when called with \textit{tainted} arguments may result in a vulnerability. In the example we specify a function named \textit{executeQuery} from the class \textit{Statement} (lines 15-26). For each sensitive function we can set a list of functions that can sanitize its inputs. A sanitization function is a function that cleans the input from malicious characters and whose return value is always \textit{untainted} (e.g., one sanitization function for \textit{mysql\_query} is \textit{mysqli\_real\_escape\_string}). In listing \ref{settings} we configure a sanitization method called \textit{sanitizeInputMethod} from the class \textit{SanitizerClass}. This mapping between sensitive and sanitization functions allows us to precisely specify the correct sanitization function for each sensitive function, thus reducing false negatives in our analysis.
     
     \item Loops settings - number of times we should analyze a loop. We explain this choice more in-depth in section \ref{loops}.
 \end{itemize}
@@ -393,7 +393,7 @@ In most languages, the constructor has the same name as the class. But in some l
 \end{figure}
 
 
-\subsubsection{Attribute access} 
+\subsubsection{Attribute access}
 Represents a direct access to an object attribute (e.g., \textit{context.myProperty}). Figure \ref{attributeaccess} shows its \astname{} representation.
 
 \begin{figure}[hbt!]
@@ -406,7 +406,6 @@ Represents a direct access to an object attribute (e.g., \textit{context.myPrope
     \end{forest}  
     \caption{\astname{} representation of an attribute access}\label{attributeaccess}
 \end{figure}
-
 
 
 \subsubsection{Code block} 
@@ -656,7 +655,7 @@ Our approach is to use a context-aware static taint analysis to find all potenti
 
 Next, we discuss the importance of the \textit{alias analysis}. Then, we present our solution to a \textit{path aware} analysis and the method \toolname{} uses to find function/method calls from different files. Finally, we describe our approach to handle loops.
 
-\subsection{Pointer information} 
+\subsection{Pointer information}
 To illustrate the importance of pointer information, consider the example from listing \ref{pointer}. Assume that \textit{param} is tainted and that \textit{executeQuery} is a sensitive function. In this example, a more conservative approach may assume that \textit{buf1} and \textit{buf2} may reference the same object, thus marking both calls to \textit{executeQuery} as tainted. Instead, \toolname{} traces the data flow through assignments made in each execution path. Thus, being able to identify that line 9 is a safe call and line 13 is a vulnerability.
 
 
@@ -680,10 +679,10 @@ query = buf2.toString();
 con.executeQuery(query);
 \end{lstlisting}
 
-Pointer analysis has been subject of much compiler research over the last decades \cite{spath2016boomerang,hind2001pointer}. Since determining what heap object a given variable may point to is undecidable, our approach computes only an approximation based on the data flow through assignments. Meaning that, in much more complex cases, when \toolname{} is unsure to which reference an object is pointing to, it assumes that they all point to the same instance.
+Pointer analysis has been subject of much compiler research over the last decades \cite{spath2016boomerang,hind2001pointer}. Since determining what heap object a given variable may point to is undecidable, our approach computes only an approximation based on the data flow through assignments. Meaning that, in much more complex cases, when \toolname{} is unsure to which reference an object is pointing to, it assumes that they all point to the same instance. We also take a simplistic approach when dealing with global variables or static attributes by saving their taint values directly in the GAST, this way their taint value is persisted throughout the analysis.
 
 
-\subsection{Path Analysis} In order to perform a precise static taint analysis it is very important to be able to track the data through different paths, ideally all of them. However, in practice, it is almost impossible since static path analysis is a very complex problem. The path is often decided at runtime due to features like \texttt{instanceof}, dynamic dispatch or reflection in Java \cite{hammer2008static}. Furthermore, these features differ between languages. Because of this, we can not have the most precise path analysis for each language. Instead, we perform an approximate path analysis based only on the \textit{control flow statements}, ignoring their conditions. This means that we only look at the structure of the code, and for each conditional statement we propagate the data flow twice: one assuming that the flow enters that path and another assuming it does not. This assumption has the disadvantage of propagating \textit{taint} marks through impossible paths.
+\subsection{Path Analysis} In order to perform a precise static taint analysis it is very important to be able to track the data through different paths, ideally all of them. However, in practice, it is almost impossible since static path analysis is a very complex problem. The path is often decided at runtime due to features like \texttt{instanceof}, dynamic dispatch or reflection in Java \cite{hammer2008static}. Furthermore, these features differ between languages. Because of this, we can not have the most precise path analysis for each language. Instead, we perform an approximate path analysis based only on the \textit{control flow statements}, ignoring their conditions. This means that we only look at the structure of the code, and for each conditional statement we propagate the data flow twice: one assuming that the flow enters that path and another assuming it does not. This assumption has the disadvantage of propagating \textit{taint} marks through impossible paths. 
 
 Consider now the example from listing \ref{pathpropagation} and assume that the variable \textit{input} is \textit{tainted}. Observing the code, we can easily identify an SQL injection vulnerability at line 7, since at line 3 the \textit{query} is concatenated with the \textit{input}.
 In this example, \toolname{} propagates the \textit{taint} marks through two paths: the first executing the \textit{if} and the second the \textit{else}. Finally, it reports the vulnerability at line 7. Also, it mentions that this vulnerability only happens if the expression \textit{"input != null"} at line 2 is true. In more complex cases, for each vulnerability \toolname{} returns the call stack and the conditions that need to be met.
