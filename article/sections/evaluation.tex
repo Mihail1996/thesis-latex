@@ -9,33 +9,33 @@ In order to show the ability of \toolname{} to analyze and find vulnerabilities 
 \begin{table*}[htbp]
     \caption{Deliberately insecure web applications}
     \begin{center}
-        \begin{tabular}{|l|| l | l  |l | l | l |}
+        \begin{tabular}{|l|| l | l  |l | l | l | l |}
             \hline
-            \textbf{Application}  & \textbf{\#loc}      & \textbf{Language}      & \textbf{Files}     & \textbf{Vuln. Found } & \textbf{Injection Vuln. Total} \\ [0.5ex] 
+            \textbf{Application}  & \textbf{\#loc}      & \textbf{Language}      & \textbf{Files}     & \textbf{Vuln. Found } & \textbf{False pos.} & \textbf{False neg.} \\ [0.5ex] 
             \hline\hline   
-            WebGoat 8             & 13898     & Java       & 320        & 11 &  \\
+            WebGoat 8             & 13898     & Java       & 320        & 11 & 1 & 0\\
             \hline
-            Vulnado               & 423       & Java       & 11         & 3 & 3  \\
+            Vulnado               & 423       & Java       & 11         & 3 & 0 & 0\\
             \hline
-            Dvja                  & 950       & Java       & 21         & 4 & 4\\
+            Dvja                  & 950       & Java       & 21         & 4 & 0 & 0\\
             \hline
-             DVWA                 & 19651     & PHP        & 358        & 18 &  \\
+             DVWA                 & 19651     & PHP        & 358        & 18 & 3  & 0\\
             \hline
-             OWASP Vwa            & 1018      & PHP        & 27         & 17 & \\   
+             OWASP Vwa            & 1018      & PHP        & 27         & 17 & 1 & 0\\   
             \hline
-             Vulnerable-node      & 4207      & JavaScript & 13         & 5 & 5 \\  
+             Vulnerable-node      & 4207      & JavaScript & 13         & 5 & 0 & 0\\  
             \hline
-             Dvna                 & 771      & JavaScript  & 14         & 0 & 4 \\
+             Dvna                 & 771      & JavaScript  & 14         & 0 & 0 & 4\\
             \hline
-             Goof                 & 571      & JavaScript  & 8         & 3 & 3\\
+             Goof                 & 571      & JavaScript  & 8         & 3 & 0 & 0 \\
             \hline  
-             NodeGoat                 & 2697      & JavaScript  & 49   & 4 & 6\\
+             NodeGoat                 & 2697      & JavaScript  & 49   & 6 & 0& 0 \\
             \hline  
-             Vulpy                 & 2373      & Python    & 57         & 6  & 6\\
+             Vulpy                 & 2373      & Python    & 57         & 6  & 0& 0\\
             \hline  
-             Dvpwa                 & 674      & Python    & 21         & 7  & 7 \\   [0.5ex]  
+             Dvpwa                 & 674      & Python    & 21         & 7  & 0 & 0\\   [0.5ex]  
             \hline\hline   
-            \textbf{Total}        & 47233 &              &  899 &  78  & \\
+            \textbf{Total}        & 47233 &              &  899 &  78  & 5 &  4\\
             \hline
         \end{tabular}
     \label{results}
@@ -66,7 +66,7 @@ In order to show the ability of \toolname{} to analyze and find vulnerabilities 
 
 In our tests, the tool had 4 false negatives in Dvna because all the dangerous code is in anonymous functions that are called by referencing variables, since we do not track the value of each variable, this is a limitation. Also, we had 1 false negative when testing PhpMyAdmin.
 
-\toolname{} only raised 5 false positives in the applications from table \ref{results}, due to data flow propagation through impossible paths. We may assume that the low number of false positives is due to our conservative taint analysis and to the relatively simple web applications that we have tested.
+\toolname{} only raised 5 false positives in the applications from table \ref{results}, due to data flow propagation through impossible paths. In total we had 12.7\% of false positives and negatives. We may assume that the low rate is due to our conservative taint analysis and to the fact that most of the deliberately insecure applications we have tested do not have very complex control flows.
 
 
 \subsection{Portability}

@@ -21,71 +21,67 @@ The objective of this section is to show that \toolname{} is capable of finding 
 \subsection{Vulnerability detection}
 In order to show the ability of \toolname{} to analyze and find vulnerabilities in web applications, we tested \toolname{} against two types of web applications. First, we chose 11 open source applications from GitHub that are deliberately insecure, with documented vulnerabilities. The criteria used to choose them was the number of stars that each application has on GitHub, essentially choosing the most known ones. To run the tests, we had to manually identify the entry points and sensitive functions for each application, meaning that \toolname{} analyzed each application several times, once for each entry point. Second, we also tested \toolname{} against two real-world open-source web applications. Since these applications are much bigger, we assumed that every file from the application is a web page that can receive user input, tainting the variables that might be influenced by the user (e.g., \$\_GET[*] in PHP). Tables \ref{results} and \ref{results1} show the results of our analysis. In the data, we only include files with the extension that we analyzed (e.g., *.java and *.php). Furthermore, we excluded comments and blank lines from the line count. We ran the tests on a computer with a Ryzen 1600 processor (6 cores, 12 threads at 3.6GHz) and 16GB of RAM. 
 
-\begin{table}[htbp]
+\begin{table*}[htbp]
     \caption{Deliberately insecure web applications}
     \begin{center}
-        \begin{spreadtab}{{tabular}{|l|| l | l  |l | l |}}
+        \begin{tabular}{|l|| l | l  |l | l | l | l |}
             \hline
-            @ \textbf{Application}  & @\textbf{\#loc}      & @\textbf{Language}      & @\textbf{Files}     & @\textbf{Vulnerabilities found } \\ [0.5ex] 
+            \textbf{Application}  & \textbf{\#loc}      & \textbf{Language}      & \textbf{Files}     & \textbf{Vuln. Found } & \textbf{False pos.} & \textbf{False neg.} \\ [0.5ex] 
             \hline\hline   
-            @ WebGoat 8             & 13898     & @ Java       & 320        & 11 \\
+            WebGoat 8             & 13898     & Java       & 320        & 11 & 1 & 0\\
             \hline
-            @ Vulnado               & 423       & @ Java       & 11         & 3 \\
+            Vulnado               & 423       & Java       & 11         & 3 & 0 & 0\\
             \hline
-            @ Dvja                  & 950       & @ Java       & 21         & 4 \\
+            Dvja                  & 950       & Java       & 21         & 4 & 0 & 0\\
             \hline
-            @  DVWA                 & 19651     & @ PHP        & 358        & 18 \\
+             DVWA                 & 19651     & PHP        & 358        & 18 & 3  & 0\\
             \hline
-            @  OWASP Vwa            & 1018      & @ PHP        & 27         & 17 \\   
+             OWASP Vwa            & 1018      & PHP        & 27         & 17 & 1 & 0\\   
             \hline
-            @  Vulnerable-node      & 4207      & @ JavaScript & 13         & 5 \\  
+             Vulnerable-node      & 4207      & JavaScript & 13         & 5 & 0 & 0\\  
             \hline
-            @  Dvna                 & 771      & @ JavaScript  & 14         & 0 \\
+             Dvna                 & 771      & JavaScript  & 14         & 0 & 0 & 4\\
             \hline
-            @  Goof                 & 571      & @ JavaScript  & 8         & 3 \\
+             Goof                 & 571      & JavaScript  & 8         & 3 & 0 & 0 \\
             \hline  
-            @  NodeGoat                 & 2697      & @ JavaScript  & 49   & 4 \\
+             NodeGoat                 & 2697      & JavaScript  & 49   & 6 & 0& 0 \\
             \hline  
-            @  Vulpy                 & 2373      & @ Python    & 57         & 6 \\
+             Vulpy                 & 2373      & Python    & 57         & 6  & 0& 0\\
             \hline  
-            @  Dvpwa                 & 674      & @ Python    & 21         & 7 \\   [0.5ex]  
+             Dvpwa                 & 674      & Python    & 21         & 7  & 0 & 0\\   [0.5ex]  
             \hline\hline   
-            @ \textbf{Total}        & sum(b2:b12) &              &  sum(d2:d12) &  sum(e2:e12) \\
+            \textbf{Total}        & 47233 &              &  899 &  78  & 5 &  4\\
             \hline
-        \end{spreadtab}
+        \end{tabular}
     \label{results}
     \end{center}
-\end{table}
+\end{table*} 
 
 
-\begin{table}[htbp]
+\begin{table*}[htbp]
     \caption{Real-world web applications}
     \begin{center}
-        \begin{spreadtab}{{tabular}{|l|| l | l  |l | l |}}
+        \begin{tabular}{|l|| l | l  |l | l |}
             \hline
-            @ \textbf{Application}  & @\textbf{\#loc}      & @\textbf{Language}      & @\textbf{Files}     & @\textbf{Vulnerabilities found } \\ [0.5ex] 
+            \textbf{Application}  & \textbf{\#loc}      & \textbf{Language}      & \textbf{Files}     & \textbf{Vuln. found} \\ [0.5ex] 
             \hline\hline   
-            @  SquirrelMail 1.5     & 46214     & @ PHP        & 376         & 0 \\ 
+             SquirrelMail 1.5     & 46214     & PHP        & 376         & 0 \\ 
             \hline
-            @  PhpMyAdmin 4.9.5     & 153576    & @ PHP        & 740        & 1 \\  [0.5ex]    
+             PhpMyAdmin 4.9.5     & 153576    & PHP        & 740        & 1 \\  [0.5ex]    
             \hline\hline   
-            @ \textbf{Total}        & sum(b2:b3) &              &  sum(d2:d3) &  sum(e2:e3) \\
+            \textbf{Total}        & 199790 &              &  1116 &  1 \\
             \hline
-        \end{spreadtab}
+        \end{tabular}
     \label{results1}
     \end{center}
-\end{table}
-
+\end{table*}
 
 
 \toolname{} analyzed 2015 files and 247023 lines of code and managed to find 79 documented vulnerabilities, such as SQL injection, cross-site scripting, command injection and file inclusion. The analysis times were quite low. The application that took the longest to analyze was \textit{PhpMyAdmin} with 82 seconds. However, the analysis times varied a lot depending on the entry point, meaning that the longer the path through which the data flows, the longer the analysis time.
 
- 
-Besides testing \toolname{} against web applications, we also have a set of 81 unit tests, with simple vulnerabilities, that run on each build of the tool. This way we have more confidence when we make a change to the taint analyzer.
-
 In our tests, the tool had 4 false negatives in Dvna because all the dangerous code is in anonymous functions that are called by referencing variables, since we do not track the value of each variable, this is a limitation. Also, we had 1 false negative when testing PhpMyAdmin.
 
-\toolname{} only raised 5 false positives in the applications from table \ref{results}, due to data flow propagation through impossible paths. We may assume that the low number of false positives is due to our conservative taint analysis and to the relatively simple web applications that we have tested.
+\toolname{} only raised 5 false positives in the applications from table \ref{results}, due to data flow propagation through impossible paths. In total we had 12.7\% of false positives and negatives. We may assume that the low rate is due to our conservative taint analysis and to the fact that most of the deliberately insecure applications we have tested do not have very complex control flows.
 
 
 
